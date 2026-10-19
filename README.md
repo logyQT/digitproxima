@@ -1,88 +1,92 @@
-# System rozpoznawania cyfr odręcznych z wykorzystaniem klasyfikatora k‑NN i interfejsu Tkinter
+# DigitProxima — Handwritten Digit Recognition with k‑NN and Tkinter
 
-Interaktywny system OCR oparty na klasyfikatorze **k‑Nearest Neighbors** z graficznym interfejsem użytkownika. Użytkownik rysuje cyfrę na płótnie, a system przeprowadza pełny proces przetwarzania obrazu, klasyfikacji oraz wizualizacji wyników.
+An interactive OCR system built on a **k‑Nearest Neighbours** classifier with a
+graphical user interface. The user draws a digit on a canvas and the system runs
+the full pipeline: image preprocessing, classification and visualisation of the
+result.
 
-## Spis treści
+## Table of contents
 
-- [Wymagania systemowe](#wymagania-systemowe)
-- [Instalacja](#instalacja)
-- [Uruchomienie](#uruchomienie)
-- [Zbiór danych](#zbiór-danych)
-- [Architektura systemu](#architektura-systemu)
-  - [Interfejs użytkownika](#interfejs-użytkownika)
-  - [Przetwarzanie obrazu](#przetwarzanie-obrazu)
-  - [Klasyfikacja](#klasyfikacja)
-  - [Wizualizacje](#wizualizacje)
-- [Struktura projektu](#struktura-projektu)
-- [Możliwe kierunki rozwoju](#możliwe-kierunki-rozwoju)
+- [System requirements](#system-requirements)
+- [Installation](#installation)
+- [Running the app](#running-the-app)
+- [Dataset](#dataset)
+- [System architecture](#system-architecture)
+  - [User interface](#user-interface)
+  - [Image preprocessing](#image-preprocessing)
+  - [Classification](#classification)
+  - [Visualisations](#visualisations)
+- [Project structure](#project-structure)
+- [Possible directions for development](#possible-directions-for-development)
+- [Summary](#summary)
 
 ---
 
-## Wymagania systemowe
+## System requirements
 
 - **Python** 3.10–3.12
-- **Tkinter** (część standardowej dystrybucji Pythona)
+- **Tkinter** (part of the standard Python distribution)
 
-### Zależności
+### Dependencies
 
-| Biblioteka     | Wersja |
-| -------------- | ------ |
-| `numpy`        | 1.26.4 |
-| `Pillow`       | 10.2.0 |
-| `scikit-learn` | 1.4.2  |
-| `matplotlib`   | 3.8.3  |
+| Library        | Version |
+| -------------- | ------- |
+| `numpy`        | 1.26.4  |
+| `Pillow`       | 10.2.0  |
+| `scikit-learn` | 1.4.2   |
+| `matplotlib`   | 3.8.3   |
 
 ---
 
-## Instalacja
+## Installation
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Uruchomienie
+## Running the app
 
 ```bash
 python main.py
 ```
 
-1. Narysuj cyfrę (0–9) na białym płótnie za pomocą myszy.
-2. Wprowadź wartość parametru **k** (liczba najbliższych sąsiadów).
-3. Kliknij **Predict**, aby przeprowadzić klasyfikację.
-4. Kliknij **Clear**, aby wyczyścić płótno i rozpocząć od nowa.
+1. Draw a digit (0–9) on the white canvas with the mouse.
+2. Enter the **k** parameter (the number of nearest neighbours); the field is
+   pre-filled with `41`.
+3. Click **Predict** to run the classification.
+4. Click **Clear** to wipe the canvas and start again.
 
 ---
 
-## Zbiór danych
+## Dataset
 
-System wykorzystuje zbiór **Digits** z modułu `sklearn.datasets`:
+The system uses the **Digits** dataset from `sklearn.datasets`:
 
-| Właściwość              | Wartość     |
-| ----------------------- | ----------- |
-| Liczba próbek           | 1797        |
-| Rozdzielczość obrazu    | 8×8 pikseli |
-| Zakres wartości pikseli | 0–16        |
-| Liczba klas             | 10 (0–9)    |
+| Property                | Value        |
+| ----------------------- | ------------ |
+| Number of samples       | 1797         |
+| Image resolution        | 8×8 pixels   |
+| Pixel value range       | 0–16         |
+| Number of classes       | 10 (0–9)     |
 
-Zbiór stanowi referencyjną bazę uczącą dla klasyfikatora k‑NN.
+The dataset is the reference training set for the k‑NN classifier.
 
 ---
 
-## Architektura systemu
+## System architecture
 
-### Interfejs użytkownika
+### User interface
 
-Zbudowany w oparciu o **Tkinter**, składa się z trzech głównych paneli:
+Built on **Tkinter**, the window has three main panels:
 
 ```
 ┌──────────────────────────────────────────────────────┐
 │                     KNN OCR                          │
 ├───────────┬───────────────────────┬──────────────────┤
-│           │                       │                  │
-│  Płótno   │  Wizualizacje         │  Histogram       │
-│  rysunku  │  • 32×32 preview      │  głosowania      │
-│  300×300  │  • średnia sąsiadów   │  k‑NN            │
-│           │  • mapa różnic        │                  │
+│           │  Average of k         │                  │
+│  Drawing  │  neighbors            │  k-NN voting     │
+│  canvas   │  Composite diff       │  histogram       │
+│  300×300  │  32×32 preview        │                  │
 │           │                       │                  │
 ├───────────┴───────────────────────┴──────────────────┤
 │  [k value: ___]  [Clear]  [Predict]                  │
@@ -90,82 +94,94 @@ Zbudowany w oparciu o **Tkinter**, składa się z trzech głównych paneli:
 └──────────────────────────────────────────────────────┘
 ```
 
-- **Panel rysowania** — obszar 300×300 px do odręcznego wprowadzania cyfr.
-- **Panel wizualizacji** — trzy wykresy: przeskalowany obraz 32×32, średnia obrazów _k_ najbliższych sąsiadów oraz mapa różnic między rysunkiem a średnią sąsiadów.
-- **Panel głosowania** — histogram rozkładu głosów _k_ najbliższych sąsiadów dla poszczególnych klas.
+- **Drawing panel** — a 300×300 px area for entering a digit by hand.
+- **Visualisation panel** — three plots: the rescaled 32×32 image, the mean of
+  the _k_ nearest neighbours' images, and the difference map between the drawing
+  and that mean.
+- **Voting panel** — a histogram of how the labels of the _k_ nearest neighbours
+  are distributed across the classes.
 
-### Przetwarzanie obrazu
+### Image preprocessing
 
-Pipeline przetwarzania danych wejściowych:
+The input pipeline:
 
 ```
-Rysunek 300×300
+300×300 drawing
        ↓
-  Skalowanie (Lanczos) → 32×32
+  Resize (Lanczos) → 32×32
        ↓
-  Inwersja kolorów
+  Colour inversion
        ↓
-  Progowanie (próg = 50)
+  Thresholding (threshold = 50)
        ↓
-  Redukcja 32×32 → 8×8 (bloki 4×4)
+  Reduction 32×32 → 8×8 (sum over each 4×4 block)
        ↓
-  Spłaszczenie → wektor cech (64 wymiary)
+  Flattening → feature vector (64 dimensions)
 ```
 
-Każdy etap zapewnia zgodność formatu danych wejściowych z reprezentacją zbioru Digits.
+Each stage brings the input into the same format as the Digits dataset. Thresholding
+produces a binary image, so each 4×4 block sums to a value in the 0–16 range the
+dataset uses.
 
-### Klasyfikacja
+### Classification
 
-| Parametr            | Wartość                     |
-| ------------------- | --------------------------- |
-| Algorytm            | k‑NN                        |
-| Metryka odległości  | Manhattan (L1)              |
-| Metoda wyszukiwania | brute force                 |
-| Liczba sąsiadów (k) | określana przez użytkownika |
+| Parameter             | Value              |
+| --------------------- | ------------------ |
+| Algorithm             | k‑NN               |
+| Distance metric       | Manhattan (L1)     |
+| Search method         | brute force        |
+| Number of neighbours (k) | set by the user |
 
-### Wizualizacje
+### Visualisations
 
-System generuje trzy kluczowe wizualizacje:
+The system produces three key visualisations:
 
-1. **Średnia najbliższych sąsiadów**
+1. **Mean of the nearest neighbours**
 
    $$A = \frac{1}{k} \sum_{i=1}^{k} N_i$$
 
-   Obraz będący średnią arytmetyczną _k_ najbliższych sąsiadów w przestrzeni 32×32.
+   The image is the arithmetic mean of the _k_ nearest neighbours in 32×32 space.
 
-2. **Mapa różnic**
+2. **Difference map**
 
    $$D = |A - I|$$
 
-   Bezwzględna różnica między rysunkiem użytkownika a średnią sąsiadów — pozwala zidentyfikować piksele, które najbardziej odbiegają od wzorca.
+   The absolute difference between the user's drawing and the neighbours' mean —
+   it highlights the pixels that deviate most from the pattern.
 
-3. **Histogram głosowania**
+3. **Voting histogram**
 
-   Rozkład etykiet wśród _k_ najbliższych sąsiadów — umożliwia ocenę pewności klasyfikacji.
+   The distribution of labels among the _k_ nearest neighbours — it gives a sense
+   of how confident the classification is.
 
 ---
 
-## Struktura projektu
+## Project structure
 
 ```
 .
-├── main.py              # Kod źródłowy aplikacji
-├── requirements.txt     # Lista zależności
-└── README.md            # Dokumentacja projektu
+├── main.py              # Application source code
+├── requirements.txt     # Dependency list
+└── README.md            # Project documentation
 ```
 
 ---
 
-## Możliwe kierunki rozwoju
+## Possible directions for development
 
-- Implementacja dodatkowych klasyfikatorów (SVM, sieci neuronowe)
-- Wprowadzenie filtrów wstępnych (np. wygładzanie Gaussa)
-- Możliwość trenowania na danych użytkownika
-- Eksport raportów klasyfikacji
-- Integracja z modelami głębokiego uczenia
+- Additional classifiers (SVM, neural networks)
+- Preprocessing filters (e.g. Gaussian smoothing)
+- Training on user-supplied data
+- Exporting classification reports
+- Integration with deep learning models
 
 ---
 
-## Podsumowanie
+## Summary
 
-Projekt stanowi kompletny, interaktywny system OCR oparty na klasyfikatorze k‑NN. Dzięki rozbudowanym wizualizacjom użytkownik może analizować proces klasyfikacji na poziomie struktury pikselowej, co czyni system wartościowym narzędziem dydaktycznym i eksperymentalnym. Aplikacja łączy klasyczne metody uczenia maszynowego z intuicyjnym interfejsem graficznym, umożliwiając praktyczne badanie właściwości algorytmu k‑NN.
+The project is a complete, interactive OCR system based on a k‑NN classifier.
+Thanks to its visualisations, the user can analyse the classification process at
+the level of individual pixels, which makes the system a valuable teaching and
+experimentation tool. The application combines classical machine learning methods
+with an intuitive graphical interface, making the properties of the k‑NN algorithm
+practical to study.
